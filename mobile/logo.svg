@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Lakshmipur Government College">
+  <defs>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0f5bd7" />
+      <stop offset="1" stop-color="#22c55e" />
+    </linearGradient>
+    <radialGradient id="bg" cx="35%" cy="30%" r="70%">
+      <stop offset="0" stop-color="#ffffff" />
+      <stop offset="1" stop-color="#eef5ff" />
+    </radialGradient>
+  </defs>
+
+  <circle cx="256" cy="256" r="238" fill="none" stroke="url(#ring)" stroke-width="20" />
+  <circle cx="256" cy="256" r="210" fill="url(#bg)" stroke="rgba(15,23,42,0.08)" stroke-width="2" />
+
+  <g transform="translate(256 250)">
+    <path
+      d="M-140 40c55-40 105-40 140-20 35-20 85-20 140 20v95c-55-40-105-40-140-20-35-20-85-20-140 20V40Z"
+      fill="#ffffff"
+      stroke="rgba(15,23,42,0.18)"
+      stroke-width="6"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M-140 40c55-40 105-40 140-20v115c-35-20-85-20-140 20V40Z"
+      fill="#f8fbff"
+    />
+    <path
+      d="M0 20c35-20 85-20 140 20v115c-55-40-105-40-140-20V20Z"
+      fill="#f1f7ff"
+    />
+    <path d="M0 16v126" stroke="rgba(15,23,42,0.16)" stroke-width="5" stroke-linecap="round" />
+  </g>
+
+  <g transform="translate(256 190)">
+    <path d="M0-55c28 20 40 42 40 65 0 26-18 48-40 62-22-14-40-36-40-62 0-23 12-45 40-65Z" fill="#ef4444" />
+    <path d="M0-20v80" stroke="#0f5bd7" stroke-width="10" stroke-linecap="round" />
+  </g>
+
+  <g font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif" text-anchor="middle">
+    <text x="256" y="346" font-size="88" font-weight="800" fill="#0f5bd7" letter-spacing="2">GC</text>
+    <text x="256" y="382" font-size="22" font-weight="700" fill="#0f172a" opacity="0.8">Teacher Phone Book</text>
+  </g>
+</svg>
+

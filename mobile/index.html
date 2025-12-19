@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0f5bd7" />
+    <title>Lakshmipur Government College - Teacher Phone Book</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="icon" href="./logo.png" type="image/png" />
+    <link rel="icon" href="./logo.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./logo.png" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <button id="backBtn" class="icon-button icon-button--topbar" type="button" aria-label="Back" title="Back" hidden>
+          <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path
+              d="M15 18l-6-6 6-6"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+
+        <div class="topbar__title">
+          <div class="topbar__headline">Lakshmipur Government College</div>
+          <div id="topbarSub" class="topbar__sub">Teacher Phone Book</div>
+        </div>
+
+        <div class="topbar__right">
+          <button id="adminCornerBtn" class="text-button text-button--topbar" type="button" title="Admin login">
+            Admin
+          </button>
+
+          <button
+            id="themeToggle"
+            class="icon-button icon-button--topbar"
+            type="button"
+            aria-label="Toggle theme"
+            title="Toggle theme"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path
+                d="M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12Zm0-16V1m0 22v-1M4.22 4.22 3.51 3.51m16.98 16.98-.71-.71M2 12H1m22 0h-1M4.22 19.78l-.71.71M20.49 3.51l-.71.71"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <main id="pageHome" class="page page--home" aria-label="Home">
+        <section class="hero">
+          <div class="hero__card">
+            <div class="hero__logo" aria-hidden="true">
+              <img
+                id="logoImg"
+                class="hero__logoImg"
+                src="./logo.png"
+                data-fallback="./logo.svg"
+                alt="Lakshmipur Government College logo"
+              />
+            </div>
+
+            <div class="hero__titleBlock">
+              <h1 class="hero__title">Lakshmipur Government College</h1>
+              <p class="hero__subtitle">Teachers Phone Book</p>
+            </div>
+
+            <div class="hero__chips" aria-label="Summary">
+              <div id="homeCountChip" class="chip">Teachers: 0</div>
+              <div id="homeUpdatedChip" class="chip chip--secondary"></div>
+            </div>
+
+            <div class="hero__actions">
+              <button id="enterBtn" class="button button--primary button--large" type="button">Open Phone Book</button>
+            </div>
+
+            <div class="hero__note">
+              Search, call, and email teachers quickly. Tap any teacher to view full details.
+            </div>
+
+            <div class="hero__footer">
+              <button id="adminEnterBtn" class="text-button" type="button">Admin</button>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <main id="pagePhonebook" class="page page--phonebook" aria-label="Phone book" hidden>
+        <section class="controls" aria-label="Search and filters">
+          <label class="search">
+            <span class="sr-only">Search</span>
+            <input
+              id="searchInput"
+              type="search"
+              inputmode="search"
+              placeholder="Search by name, subject, phone..."
+              autocomplete="off"
+            />
+          </label>
+
+          <div class="filters">
+            <label class="filter">
+              <span class="filter__label">Subject</span>
+              <select id="subjectFilter">
+                <option value="">All</option>
+              </select>
+            </label>
+
+            <label class="filter">
+              <span class="filter__label">Designation</span>
+              <select id="designationFilter">
+                <option value="">All</option>
+              </select>
+            </label>
+
+            <button id="clearBtn" class="button button--secondary" type="button">Clear</button>
+          </div>
+
+          <div class="meta">
+            <div id="countText" class="meta__count">0 teachers</div>
+            <div id="updatedText" class="meta__updated"></div>
+          </div>
+        </section>
+
+        <section class="content" aria-label="Teacher list">
+          <div id="list" class="list" role="list"></div>
+          <div id="emptyState" class="empty" hidden>
+            <div class="empty__title">No teachers found</div>
+            <div class="empty__sub">Try changing your search or filters.</div>
+          </div>
+          <div id="noDataState" class="empty" hidden>
+            <div class="empty__title">No data loaded</div>
+            <div class="empty__sub">Data is missing. Please contact the administrator.</div>
+          </div>
+        </section>
+      </main>
+
+      <main id="pageAdmin" class="page page--admin" aria-label="Admin" hidden>
+        <section class="admin">
+          <div class="admin__card">
+            <div class="admin__header">
+              <div class="admin__title">Admin Panel</div>
+              <div class="admin__subtitle">Edit teachers, add photos, then save/export updates.</div>
+            </div>
+
+            <div id="adminLoggedOut" class="adminBlock">
+              <label class="adminField">
+                <span class="adminField__label">Admin password</span>
+                <input id="adminPassword" class="adminField__input" type="password" placeholder="Enter password" />
+              </label>
+              <div class="adminActions">
+                <button id="adminLoginBtn" class="button button--primary" type="button">Login</button>
+                <button id="adminCancelBtn" class="button button--secondary" type="button">Cancel</button>
+              </div>
+              <div id="adminLoginHint" class="adminHint"></div>
+            </div>
+
+            <div id="adminLoggedIn" class="adminBlock" hidden>
+              <div class="adminToolbar">
+                <button id="adminAddBtn" class="button button--primary" type="button">Add Teacher</button>
+                <button id="adminSaveBtn" class="button" type="button">Save & Apply</button>
+                <button id="adminExportJsBtn" class="button button--secondary" type="button">Download Data File</button>
+                <button id="adminExportJsonBtn" class="button button--secondary" type="button">Download JSON</button>
+
+                <label class="fileButton button button--secondary" role="button" tabindex="0">
+                  Import JSON
+                  <input id="adminImportJson" class="fileButton__input" type="file" accept="application/json" />
+                </label>
+
+                <button id="adminResetBtn" class="button button--secondary" type="button">Reset to Original</button>
+                <button id="adminLogoutBtn" class="button button--secondary" type="button">Logout</button>
+              </div>
+
+              <div class="adminLayout">
+                <div class="adminPane adminPane--list">
+                  <label class="search">
+                    <span class="sr-only">Search teachers</span>
+                    <input id="adminSearch" type="search" placeholder="Search teachers..." autocomplete="off" />
+                  </label>
+                  <div id="adminCount" class="adminCount"></div>
+                  <div id="adminList" class="adminList" role="list"></div>
+                </div>
+
+                <div class="adminPane adminPane--form">
+                  <div id="adminEmptyForm" class="adminEmpty">Select a teacher to edit.</div>
+                  <form id="adminForm" class="adminForm" hidden>
+                    <div class="adminPhoto">
+                      <div id="adminPhotoPreview" class="avatar avatar--large" aria-hidden="true"></div>
+                      <div class="adminPhoto__actions">
+                        <label class="fileButton button button--secondary" role="button" tabindex="0">
+                          Upload Photo
+                          <input id="adminPhotoInput" class="fileButton__input" type="file" accept="image/*" />
+                        </label>
+                        <button id="adminPhotoClear" class="button button--secondary" type="button">Remove Photo</button>
+                      </div>
+                    </div>
+
+                    <div id="adminFields" class="adminFields"></div>
+
+                    <div class="adminForm__actions">
+                      <button id="adminDeleteBtn" class="button button--secondary" type="button">Delete</button>
+                      <button id="adminUpdateBtn" class="button button--primary" type="button">Update</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+
+              <div class="adminNote">
+                For security, this “admin login” is only a UI lock. For real multi-user secure editing, a server/Firebase is
+                needed.
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="modal" class="modal" hidden>
+      <div class="modal__backdrop" data-close="true"></div>
+      <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal__header">
+          <div class="modal__headerText">
+            <div id="modalTitle" class="modal__title">Teacher</div>
+            <div id="modalSubtitle" class="modal__subtitle"></div>
+          </div>
+          <button class="icon-button" type="button" data-close="true" aria-label="Close" title="Close">
+            <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path
+                d="M18 6 6 18M6 6l12 12"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <div class="modal__actions">
+          <a id="modalCall" class="button button--primary" href="#" rel="nofollow">Call</a>
+          <a id="modalEmail" class="button button--secondary" href="#" rel="nofollow">Email</a>
+          <button id="modalCopy" class="button button--secondary" type="button">Copy Phone</button>
+          <button id="modalCopyEmail" class="button button--secondary" type="button">Copy Email</button>
+        </div>
+
+        <div id="modalBody" class="modal__body"></div>
+      </div>
+    </div>
+
+    <script src="./phonebook_data.js"></script>
+    <script src="./admin_config.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

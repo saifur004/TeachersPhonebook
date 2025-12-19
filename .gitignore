@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+phonebook_settings.json
+
+node_modules/
+npm-debug.log*
+
+android/.gradle/
+android/.idea/
+android/build/
+android/app/build/
+android/capacitor-cordova-android-plugins/build/
+.idea/
+
