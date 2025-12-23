@@ -290,6 +290,80 @@ html[data-theme="dark"] .hero__logoImg {
   color: var(--brand);
 }
 
+.devBadge {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(15, 91, 215, 0.15);
+  background: radial-gradient(circle at 20% 20%, rgba(15, 91, 215, 0.08), transparent 45%),
+    radial-gradient(circle at 80% 40%, rgba(39, 71, 255, 0.12), transparent 45%),
+    var(--surface-2);
+  box-shadow: 0 12px 35px rgba(15, 91, 215, 0.08);
+}
+
+.devBadge__photoWrap {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0f5bd7, #2747ff);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+}
+
+.devBadge__photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.devBadge__photoWrap--placeholder .devBadge__initials {
+  display: block;
+}
+
+.devBadge__initials {
+  position: absolute;
+  display: none;
+}
+
+.devBadge__text {
+  display: grid;
+  gap: 2px;
+}
+
+.devBadge__label {
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-weight: 750;
+}
+
+.devBadge__name {
+  font-size: 16px;
+  font-weight: 850;
+  background: linear-gradient(120deg, #0f5bd7, #2747ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.devBadge__role {
+  font-size: 13px;
+  color: var(--text);
+  opacity: 0.85;
+}
+
 .controls {
   padding: 14px 16px 0;
 }
