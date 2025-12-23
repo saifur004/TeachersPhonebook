@@ -116,9 +116,6 @@
   }
 
   function shouldHideAdminEntry() {
-    var v = window.PHONEBOOK_HIDE_ADMIN_ENTRY;
-    if (v === true) return true;
-    if (typeof v === "string") return v.trim().toLowerCase() === "true";
     return false;
   }
 
@@ -475,6 +472,32 @@
   var serialKey = findKey(keys, ["serial", "ক্রমিক", "ক্রম"]);
   var bcsBatchKey = findKey(keys, ["বিসিএস", "bcs", "batch", "বিসিএস ব্যাচ"]);
 
+  var SUBJECT_ALIASES = {
+    "রসায়ন বিভাগ": "রসায়ন বিভাগ",
+    "রসায়ন বিভাগ": "রসায়ন বিভাগ",
+    "islamic studies": "Islamic Studies",
+    "ইসলামি স্টাডিজ বিভাগ": "ইসলামিক স্টাডিজ বিভাগ",
+    "ইসলামিক স্টাডিজ বিভাগ": "ইসলামিক স্টাডিজ বিভাগ",
+    "আরবী ও ইসলামী শিক্ষা বিভাগ": "ইসলামিক স্টাডিজ বিভাগ",
+    "পদার্থবিজ্ঞান বিভাগ": "পদার্থবিদ্যা বিভাগ",
+    "পদার্থবিজ্ঞান": "পদার্থবিদ্যা বিভাগ",
+    "পদার্থবিদ্যা বিভাগ": "পদার্থবিদ্যা বিভাগ",
+    "পদার্থবিদ্যা": "পদার্থবিদ্যা বিভাগ",
+    "উদ্ভিদবিজ্ঞান বিভাগ": "উদ্ভিদ ও প্রাণিবিজ্ঞান বিভাগ",
+    "উদ্ভিদ ও প্রাণিবিজ্ঞান বিভাগ": "উদ্ভিদ ও প্রাণিবিজ্ঞান বিভাগ",
+    "প্রাণীবিদ্যা বিভাগ": "উদ্ভিদ ও প্রাণিবিজ্ঞান বিভাগ",
+    "প্রাণিবিদ্যা বিভাগ": "উদ্ভিদ ও প্রাণিবিজ্ঞান বিভাগ",
+    "প্রাণীবিদ্যা": "উদ্ভিদ ও প্রাণিবিজ্ঞান বিভাগ",
+    "প্রাণিবিদ্যা": "উদ্ভিদ ও প্রাণিবিজ্ঞান বিভাগ",
+  };
+
+  function normalizeSubjectValue(value) {
+    var text = String(value || "").trim().replace(/\s+/g, " ");
+    var key = text.toLowerCase();
+    if (SUBJECT_ALIASES[key]) return SUBJECT_ALIASES[key];
+    return text;
+  }
+
   var derived = data.map(function (record) {
     var parts = [];
     for (var i = 0; i < keys.length; i++) {
@@ -537,7 +560,7 @@
     if (subjectKey) {
       var subjects = uniqueSorted(
         data.map(function (r) {
-          return r[subjectKey] || "";
+          return normalizeSubjectValue(r[subjectKey]);
         })
       );
       fillSelect(elSubject, subjects);
@@ -1358,7 +1381,6 @@
     leftText.appendChild(title);
 
     var metaLine = [];
-    if (postType) metaLine.push(postType);
     if (subject) metaLine.push(subject);
     var metaText = metaLine.join(" • ");
     if (metaText) {
@@ -1573,7 +1595,7 @@
   function getRoute() {
     var h = String(location.hash || "").replace("#", "").toLowerCase();
     if (h === "phonebook" || h === "list") return "phonebook";
-    if (h === "admin") return "admin";
+    if (h === "admin") return "home";
     return "home";
   }
 
@@ -1643,7 +1665,7 @@
       var item = derived[i];
       var record = item.record;
       if (q && item.search.indexOf(q) === -1) continue;
-      if (subjectKey && subject && String(record[subjectKey] || "").trim() !== subject) continue;
+      if (subjectKey && subject && normalizeSubjectValue(record[subjectKey]) !== subject) continue;
       if (designationKey && designation && String(record[designationKey] || "").trim() !== designation) continue;
       if (group && record[GROUP_FIELD] !== group) continue;
       out.push(record);
@@ -1790,29 +1812,13 @@
     }
     if (elAdminEnterBtn) {
       elAdminEnterBtn.addEventListener("click", function () {
-        setRoute("admin");
+        setRoute("home");
       });
     }
 
     var hideAdminEntry = shouldHideAdminEntry();
-    if (elAdminEnterBtn) elAdminEnterBtn.hidden = hideAdminEntry;
-    if (elAdminCornerBtn) {
-      elAdminCornerBtn.hidden = false;
-      elAdminCornerBtn.textContent = hideAdminEntry ? "Admin (hold)" : "Admin";
-      elAdminCornerBtn.onclick = null;
-      if (hideAdminEntry) {
-        elAdminCornerBtn.addEventListener("click", function () {
-          showToast("Tip: hold Admin to open login");
-        });
-        wireLongPress(elAdminCornerBtn, 900, function () {
-          setRoute("admin");
-        });
-      } else {
-        elAdminCornerBtn.addEventListener("click", function () {
-          setRoute("admin");
-        });
-      }
-    }
+    if (elAdminEnterBtn) elAdminEnterBtn.hidden = true;
+    if (elAdminCornerBtn) elAdminCornerBtn.hidden = true;
     if (hideAdminEntry) {
       wireLongPress(elLogoImg, 1400, function () {
         setRoute("admin");
