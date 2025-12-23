@@ -6,16 +6,21 @@
   var ADMIN_LOCK_KEY = "phonebook_admin_lock_v1";
   var DEFAULT_ADMIN_PASSWORD = "CHANGE_THIS_PASSWORD";
   var PHOTO_FIELD = "Photo";
+  var GROUP_FIELD = "__group";
 
   var adminSession = { loggedIn: false, expiresAt: 0 };
 
-  var baseData = Array.isArray(window.PHONEBOOK_DATA) ? window.PHONEBOOK_DATA : [];
-  var meta = window.PHONEBOOK_META && typeof window.PHONEBOOK_META === "object" ? window.PHONEBOOK_META : null;
+  var rawMeta = window.PHONEBOOK_META && typeof window.PHONEBOOK_META === "object" ? window.PHONEBOOK_META : null;
+  var normalized = normalizeIncomingData(window.PHONEBOOK_DATA, rawMeta);
+  var baseData = normalized.rows;
+  var groups = normalized.groups;
+  var meta = normalized.meta;
   var data = baseData;
   var activeUpdatedAt = meta && meta.generatedAt ? meta.generatedAt : null;
 
   var elSearch = document.getElementById("searchInput");
   var elSubject = document.getElementById("subjectFilter");
+  var elGroup = document.getElementById("groupFilter");
   var elDesignation = document.getElementById("designationFilter");
   var elClear = document.getElementById("clearBtn");
   var elList = document.getElementById("list");
@@ -115,6 +120,52 @@
     if (v === true) return true;
     if (typeof v === "string") return v.trim().toLowerCase() === "true";
     return false;
+  }
+
+  function computeGroupsFromRows(rows) {
+    if (!Array.isArray(rows) || !rows.length) return [];
+    var counts = Object.create(null);
+    for (var i = 0; i < rows.length; i++) {
+      var rec = rows[i];
+      if (!rec || typeof rec !== "object") continue;
+      var g = rec[GROUP_FIELD];
+      if (!g) continue;
+      counts[g] = (counts[g] || 0) + 1;
+    }
+    var out = [];
+    for (var key in counts) {
+      if (Object.prototype.hasOwnProperty.call(counts, key)) out.push({ id: key, label: key, count: counts[key] });
+    }
+    out.sort(function (a, b) {
+      return a.label.localeCompare(b.label, undefined, { numeric: true, sensitivity: "base" });
+    });
+    return out;
+  }
+
+  function normalizeIncomingData(rawData, rawMeta) {
+    var metaOut = rawMeta && typeof rawMeta === "object" ? rawMeta : null;
+    var groupsOut = [];
+
+    if (rawData && !Array.isArray(rawData) && typeof rawData === "object") {
+      if (!metaOut && rawData.meta && typeof rawData.meta === "object") metaOut = rawData.meta;
+      var combined = [];
+      for (var key in rawData) {
+        if (!Object.prototype.hasOwnProperty.call(rawData, key)) continue;
+        if (key === "meta") continue;
+        var bucket = rawData[key];
+        if (!Array.isArray(bucket)) continue;
+        groupsOut.push({ id: key, label: key, count: bucket.length });
+        for (var i = 0; i < bucket.length; i++) {
+          var rec = deepClone(bucket[i]);
+          rec[GROUP_FIELD] = rec[GROUP_FIELD] || key;
+          combined.push(rec);
+        }
+      }
+      return { rows: combined, groups: groupsOut, meta: metaOut };
+    }
+
+    var rows = Array.isArray(rawData) ? deepClone(rawData) : [];
+    return { rows: rows, groups: computeGroupsFromRows(rows), meta: metaOut };
   }
 
   function isAdminConfigured() {
@@ -368,7 +419,9 @@
 
   var override = loadOverride();
   if (override && Array.isArray(override.data)) {
-    data = override.data;
+    data = deepClone(override.data);
+    var overrideGroups = computeGroupsFromRows(data);
+    if (overrideGroups.length) groups = overrideGroups;
     if (override.savedAt) activeUpdatedAt = override.savedAt;
   }
 
@@ -419,6 +472,8 @@
   var designationKey = findKey(keys, ["designation", "পদবি"]);
   var postTypeKey = findKey(keys, ["পদের ধরন", "type"]);
   var photoKey = findKey(keys, ["photo", "image", "picture", "ছবি"]) || (keys.indexOf(PHOTO_FIELD) !== -1 ? PHOTO_FIELD : null);
+  var serialKey = findKey(keys, ["serial", "ক্রমিক", "ক্রম"]);
+  var bcsBatchKey = findKey(keys, ["বিসিএস", "bcs", "batch", "বিসিএস ব্যাচ"]);
 
   var derived = data.map(function (record) {
     var parts = [];
@@ -463,6 +518,22 @@
   }
 
   function initFilters() {
+    if (elGroup) {
+      if (groups && groups.length) {
+        fillSelect(
+          elGroup,
+          groups.map(function (g) {
+            return g.id;
+          })
+        );
+        elGroup.disabled = false;
+        elGroup.parentElement.classList.remove("is-disabled");
+      } else {
+        elGroup.disabled = true;
+        elGroup.parentElement.classList.add("is-disabled");
+      }
+    }
+
     if (subjectKey) {
       var subjects = uniqueSorted(
         data.map(function (r) {
@@ -659,11 +730,55 @@
   }
 
   function buildPhonebookDataJs(rows, savedAt) {
-    var metaObj = {
-      generatedAt: savedAt,
-      source: "Admin Panel",
-      count: rows.length,
-    };
+    var metaObj = meta && typeof meta === "object" ? deepClone(meta) : {};
+    if (!metaObj || typeof metaObj !== "object") metaObj = {};
+
+    for (var mk in metaObj) {
+      if (Object.prototype.hasOwnProperty.call(metaObj, mk) && mk.indexOf("count_") === 0) delete metaObj[mk];
+    }
+
+    metaObj.generatedAt = savedAt;
+    metaObj.source = "Admin Panel";
+    metaObj.count = rows.length;
+    metaObj.count_actual = rows.length;
+    metaObj.count_declared = rows.length;
+
+    var grouped = Object.create(null);
+    var groupNames = [];
+    var groupCounts = Object.create(null);
+    var uncategorized = [];
+    var hasGroups = false;
+
+    for (var i = 0; i < rows.length; i++) {
+      var rec = deepClone(rows[i]);
+      var groupName = String(rec[GROUP_FIELD] || "").trim();
+      if (groupName) {
+        hasGroups = true;
+        if (!grouped[groupName]) {
+          grouped[groupName] = [];
+          groupNames.push(groupName);
+        }
+        groupCounts[groupName] = (groupCounts[groupName] || 0) + 1;
+        delete rec[GROUP_FIELD];
+        grouped[groupName].push(rec);
+      } else {
+        uncategorized.push(rec);
+      }
+    }
+
+    var payload = rows;
+    if (hasGroups) {
+      for (var g = 0; g < groupNames.length; g++) {
+        var name = groupNames[g];
+        metaObj["count_" + name] = groupCounts[name] || 0;
+      }
+      if (uncategorized.length) {
+        grouped.uncategorized = uncategorized;
+        metaObj.count_uncategorized = uncategorized.length;
+      }
+      payload = grouped;
+    }
+
     return (
       "// Phone book data (exported from Admin Panel)\n" +
       "// Replace your mobile/phonebook_data.js with this file.\n" +
@@ -671,7 +786,7 @@
       savedAt +
       "\n\n" +
       "window.PHONEBOOK_DATA = " +
-      JSON.stringify(rows, null, 2) +
+      JSON.stringify(payload, null, 2) +
       ";\n\n" +
       "window.PHONEBOOK_META = " +
       JSON.stringify(metaObj, null, 2) +
@@ -799,7 +914,7 @@
       items.push({ index: i, record: record });
     }
 
-    elAdminCount.textContent = items.length + " / " + adminData.length + " teachers";
+    elAdminCount.textContent = items.length + " / " + adminData.length + " records";
     while (elAdminList.firstChild) elAdminList.removeChild(elAdminList.firstChild);
 
     for (var j = 0; j < items.length; j++) {
@@ -1018,9 +1133,10 @@
         var record = {};
         for (var i = 0; i < adminKeys.length; i++) record[adminKeys[i]] = "";
         if (idKey && record[idKey] === "") record[idKey] = String(Date.now());
+        if (groups && groups.length) record[GROUP_FIELD] = groups[0].id;
         adminData.unshift(record);
         selectAdminIndex(0);
-        showToast("New teacher added");
+        showToast("New entry added");
       });
     }
 
@@ -1123,7 +1239,8 @@
         reader.onload = function () {
           try {
             var parsed = JSON.parse(String(reader.result || ""));
-            var rows = Array.isArray(parsed) ? parsed : parsed && Array.isArray(parsed.data) ? parsed.data : null;
+            var normalizedImport = normalizeIncomingData(parsed && parsed.data ? parsed.data : parsed, null);
+            var rows = normalizedImport.rows;
             if (!rows) throw new Error("Invalid JSON");
             adminData = deepClone(rows);
             adminKeys = collectKeysFromRows(adminData);
@@ -1217,6 +1334,8 @@
     var subject = subjectKey ? String(record[subjectKey] || "").trim() : "";
     var designation = designationKey ? String(record[designationKey] || "").trim() : "";
     var postType = postTypeKey ? String(record[postTypeKey] || "").trim() : "";
+    var bcsBatch = bcsBatchKey ? String(record[bcsBatchKey] || "").trim() : "";
+    var groupName = record[GROUP_FIELD];
 
     var card = document.createElement("div");
     card.className = "card";
@@ -1255,6 +1374,15 @@
       pill.textContent = designation;
       pill.style.marginTop = "10px";
       leftText.appendChild(pill);
+    }
+
+    if (groupName === "কর্মকর্তা" && bcsBatch) {
+      var badge = document.createElement("div");
+      badge.className = "pill pill--accent";
+      badge.textContent = "BCS: " + bcsBatch;
+      badge.title = badge.textContent;
+      badge.style.marginTop = designation ? "8px" : "10px";
+      leftText.appendChild(badge);
     }
 
     left.appendChild(leftText);
@@ -1508,6 +1636,7 @@
     var q = normalizeText(elSearch.value);
     var subject = elSubject.value;
     var designation = elDesignation.value;
+    var group = elGroup ? elGroup.value : "";
 
     var out = [];
     for (var i = 0; i < derived.length; i++) {
@@ -1516,6 +1645,7 @@
       if (q && item.search.indexOf(q) === -1) continue;
       if (subjectKey && subject && String(record[subjectKey] || "").trim() !== subject) continue;
       if (designationKey && designation && String(record[designationKey] || "").trim() !== designation) continue;
+      if (group && record[GROUP_FIELD] !== group) continue;
       out.push(record);
     }
     return out;
@@ -1527,14 +1657,15 @@
 
     if (!records.length) {
       elEmpty.hidden = false;
-      elCount.textContent = "0 teachers";
+      elCount.textContent = "0 entries";
       return;
     }
 
     for (var i = 0; i < records.length; i++) {
       elList.appendChild(renderCard({ record: records[i], index: i }));
     }
-    elCount.textContent = records.length + " teacher" + (records.length === 1 ? "" : "s");
+    var label = records.length === 1 ? "entry" : "entries";
+    elCount.textContent = records.length + " " + label;
   }
 
   function onUpdate() {
@@ -1641,7 +1772,16 @@
         elHomeUpdated.style.display = "none";
       }
     }
-    if (elHomeCount) elHomeCount.textContent = "Teachers: " + data.length;
+    if (elHomeCount) {
+      if (groups && groups.length) {
+        var parts = groups.map(function (g) {
+          return (g.label || g.id || "Group") + ": " + g.count;
+        });
+        elHomeCount.textContent = parts.join(" • ");
+      } else {
+        elHomeCount.textContent = "Records: " + data.length;
+      }
+    }
 
     if (elEnterBtn) {
       elEnterBtn.addEventListener("click", function () {
@@ -1693,7 +1833,7 @@
     if (!data.length) {
       elNoData.hidden = false;
       elEmpty.hidden = true;
-      elCount.textContent = "0 teachers";
+      elCount.textContent = "0 entries";
       if (elEnterBtn) elEnterBtn.disabled = true;
       return;
     }
@@ -1703,10 +1843,12 @@
 
     elSearch.addEventListener("input", onUpdate);
     elSubject.addEventListener("change", onUpdate);
+    if (elGroup) elGroup.addEventListener("change", onUpdate);
     elDesignation.addEventListener("change", onUpdate);
     elClear.addEventListener("click", function () {
       elSearch.value = "";
       elSubject.value = "";
+      if (elGroup) elGroup.value = "";
       elDesignation.value = "";
       onUpdate();
     });

@@ -282,6 +282,14 @@ html[data-theme="dark"] .hero__logoImg {
   line-height: 1.45;
 }
 
+.hero__dev {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 750;
+  color: var(--brand);
+}
+
 .controls {
   padding: 14px 16px 0;
 }
@@ -305,7 +313,7 @@ html[data-theme="dark"] .hero__logoImg {
 .filters {
   margin-top: 10px;
   display: grid;
-  grid-template-columns: 1fr 1fr auto;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 10px;
   align-items: end;
 }
@@ -503,6 +511,13 @@ select:focus {
   max-width: 100%;
   white-space: normal;
   word-break: break-word;
+}
+
+.pill--accent {
+  border: none;
+  background: linear-gradient(135deg, #0f5bd7, #2747ff);
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(15, 91, 215, 0.25);
 }
 
 .card__actions {

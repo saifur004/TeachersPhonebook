@@ -75,7 +75,7 @@
             </div>
 
             <div class="hero__chips" aria-label="Summary">
-              <div id="homeCountChip" class="chip">Teachers: 0</div>
+              <div id="homeCountChip" class="chip">Records: 0</div>
               <div id="homeUpdatedChip" class="chip chip--secondary"></div>
             </div>
 
@@ -85,6 +85,10 @@
 
             <div class="hero__note">
               Search, call, and email teachers quickly. Tap any teacher to view full details.
+            </div>
+
+            <div class="hero__dev">
+              Developed by Mowdud Elahi — Lecturer, Dept. of Islamic Studies
             </div>
 
             <div class="hero__footer">
@@ -109,6 +113,13 @@
 
           <div class="filters">
             <label class="filter">
+              <span class="filter__label">Category</span>
+              <select id="groupFilter">
+                <option value="">All</option>
+              </select>
+            </label>
+
+            <label class="filter">
               <span class="filter__label">Subject</span>
               <select id="subjectFilter">
                 <option value="">All</option>
@@ -126,7 +137,7 @@
           </div>
 
           <div class="meta">
-            <div id="countText" class="meta__count">0 teachers</div>
+            <div id="countText" class="meta__count">0 entries</div>
             <div id="updatedText" class="meta__updated"></div>
           </div>
         </section>
@@ -134,7 +145,7 @@
         <section class="content" aria-label="Teacher list">
           <div id="list" class="list" role="list"></div>
           <div id="emptyState" class="empty" hidden>
-            <div class="empty__title">No teachers found</div>
+            <div class="empty__title">No entries found</div>
             <div class="empty__sub">Try changing your search or filters.</div>
           </div>
           <div id="noDataState" class="empty" hidden>
