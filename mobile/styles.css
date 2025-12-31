@@ -578,7 +578,7 @@ select:focus {
   padding: 4px 10px;
   border-radius: 999px;
   border: 1px solid var(--border);
-  background: rgba(15, 91, 215, 0.08);
+  background: rgba(148, 163, 184, 0.12);
   color: var(--text);
   font-size: 12px;
   font-weight: 650;
@@ -593,6 +593,7 @@ select:focus {
   color: #fff;
   box-shadow: 0 6px 18px rgba(15, 91, 215, 0.25);
 }
+
 
 .card__actions {
   display: inline-flex;
