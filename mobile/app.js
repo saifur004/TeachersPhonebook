@@ -1028,7 +1028,7 @@
   });
 
   derived.sort(function (a, b) {
-    var officerGroup = "কর্মকর্তা";
+    var officerGroup = "\u0995\u09b0\u09cd\u09ae\u0995\u09b0\u09cd\u09a4\u09be";
     var ga = a.record[GROUP_FIELD];
     var gb = b.record[GROUP_FIELD];
 
@@ -1040,6 +1040,8 @@
 
     return a.originalIndex - b.originalIndex;
   });
+
+
 
   function uniqueSorted(values) {
 
